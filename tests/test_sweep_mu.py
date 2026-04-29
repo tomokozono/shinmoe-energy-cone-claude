@@ -13,7 +13,9 @@ def test_sweep_mu_writes_summary_and_overrides_output(monkeypatch, tmp_path):
 
     def fake_run(cfg):
         calls.append(cfg)
-        out_dir = Path(cfg["output_dir"])
+        # Simulate pipeline: creates mu_X subdir under output_dir
+        mu_tag = f"{cfg['mu']:.2f}"
+        out_dir = Path(cfg["output_dir"]) / f"mu_{mu_tag}"
         out_dir.mkdir(parents=True, exist_ok=True)
         return {
             "n_vents": 3,
@@ -44,8 +46,9 @@ def test_sweep_mu_writes_summary_and_overrides_output(monkeypatch, tmp_path):
     assert len(calls) == 2
     assert calls[0]["mu"] == 0.25
     assert calls[1]["mu"] == 0.30
-    assert calls[0]["output_dir"].endswith("outputs/case/mu_0.25")
-    assert calls[1]["output_dir"].endswith("outputs/case/mu_0.30")
+    # sweep passes the base dir; pipeline appends mu_X internally
+    assert calls[0]["output_dir"].endswith("outputs/case")
+    assert calls[1]["output_dir"].endswith("outputs/case")
 
     summary_path = tmp_path / "outputs" / "case" / "mu_sweep_summary.csv"
     assert summary_path.exists()

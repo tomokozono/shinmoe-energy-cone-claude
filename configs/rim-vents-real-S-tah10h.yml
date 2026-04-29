@@ -16,6 +16,4 @@ thickness_threshold_m: 0.5
 simplify_m: 5.0
 min_area_m2: 0.0
 output_dir: ../output/rim-vents-real-S-tau10h
-union_shapefile: merged_mu_0.25_union_zoffset_from_thickness.shp
-quicklook_png: merged_mu_0.25_union_zoffset_from_thickness.png
 save_lava_mask: true

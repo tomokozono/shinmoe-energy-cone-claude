@@ -40,7 +40,7 @@ def main() -> int:
         mu_tag = _format_mu(mu)
         cfg_run = dict(cfg)
         cfg_run["mu"] = float(mu)
-        cfg_run["output_dir"] = str(base_output_dir / f"mu_{mu_tag}")
+        cfg_run["output_dir"] = str(base_output_dir)
 
         for key in ("dem_with_lava", "dem_no_lava"):
             if key in cfg_run:

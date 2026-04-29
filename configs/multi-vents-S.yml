@@ -17,5 +17,3 @@ vents:
   - [678470, 3532040]
   - [678440, 3531830]
 output_dir: ../output/multi-vents-S
-union_shapefile: merged_mu_0.30_union.shp
-quicklook_png: merged_mu_0.30_union.png

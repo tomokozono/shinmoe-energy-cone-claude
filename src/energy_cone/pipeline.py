@@ -142,7 +142,8 @@ def run(config: dict | str | Path) -> dict:
     mu = float(cfg["mu"])
     crs_epsg = cfg.get("crs_epsg", str(dem_with_lava.crs))
 
-    output_dir = _resolve_path(cfg.get("output_dir", f"energy_cone_mu_{mu:.2f}"), cfg_base)
+    output_base = _resolve_path(cfg.get("output_dir", "output"), cfg_base)
+    output_dir = output_base / f"mu_{mu:.2f}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     vents_mode = cfg.get("vents_mode", "manual")
@@ -245,8 +246,8 @@ def run(config: dict | str | Path) -> dict:
         crs=crs_epsg,
     )
 
-    shp_name = cfg.get("union_shapefile", f"merged_mu_{mu:.2f}_union.shp")
-    png_name = cfg.get("quicklook_png", f"merged_mu_{mu:.2f}_union.png")
+    shp_name = "union.shp"
+    png_name = "quicklook.png"
 
     shp_path = output_dir / shp_name
     png_path = output_dir / png_name
