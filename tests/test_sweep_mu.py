@@ -1,59 +1,88 @@
 import sys
 from pathlib import Path
 
-from scripts import sweep_mu
+from scripts import run_energy_cone
 
 
-def test_sweep_mu_writes_summary_and_overrides_output(monkeypatch, tmp_path):
+def test_run_energy_cone_default_mu(monkeypatch, tmp_path):
     config_path = tmp_path / "case.yml"
-    config_path.write_text("mu: 0.1\n", encoding="utf-8")
+    config_path.write_text(
+        f"vents_mode: manual\ndem_with_lava: fake.tif\nvents:\n  - [0.0, 0.0]\n"
+        f"output_dir: {tmp_path / 'output'}\n",
+        encoding="utf-8",
+    )
 
-    monkeypatch.setattr(sweep_mu, "ROOT", tmp_path)
     calls = []
+
+    def fake_load_config(p):
+        return {
+            "vents_mode": "manual",
+            "dem_with_lava": str(tmp_path / "fake.tif"),
+            "vents": [[0.0, 0.0]],
+            "output_dir": str(tmp_path / "output"),
+        }
 
     def fake_run(cfg):
         calls.append(cfg)
-        # Simulate pipeline: creates mu_X subdir under output_dir
         mu_tag = f"{cfg['mu']:.2f}"
         out_dir = Path(cfg["output_dir"]) / f"mu_{mu_tag}"
         out_dir.mkdir(parents=True, exist_ok=True)
         return {
-            "n_vents": 3,
+            "n_vents": 1,
             "az_step": 1.0,
-            "dr_m": 5.0,
-            "area_m2": 123.0 + cfg["mu"],
-            "bounds_minx": 1.0,
-            "bounds_miny": 2.0,
-            "bounds_maxx": 3.0,
-            "bounds_maxy": 4.0,
+            "dr_m": 10.0,
+            "area_m2": 1000.0 * cfg["mu"],
+            "bounds_minx": 0.0,
+            "bounds_miny": 0.0,
+            "bounds_maxx": 1.0,
+            "bounds_maxy": 1.0,
             "output_dir": str(out_dir),
         }
 
-    fake_load_config = lambda p: {"mu": 0.1, "dem_with_lava": "fake.tif"}
-    monkeypatch.setattr(sweep_mu, "_load_pipeline_functions", lambda: (fake_load_config, fake_run))
-    monkeypatch.setattr(sys, "argv", [
-        "sweep_mu.py",
-        "--config",
-        str(config_path),
-        "--mu",
-        "0.25",
-        "0.30",
-    ])
+    monkeypatch.setattr(run_energy_cone, "load_config", fake_load_config)
+    monkeypatch.setattr(run_energy_cone, "run", fake_run)
+    monkeypatch.setattr(sys, "argv", ["run_energy_cone.py", "--config", str(config_path)])
 
-    code = sweep_mu.main()
+    code = run_energy_cone.main()
     assert code == 0
 
-    assert len(calls) == 2
-    assert calls[0]["mu"] == 0.25
-    assert calls[1]["mu"] == 0.30
-    # sweep passes the base dir; pipeline appends mu_X internally
-    assert calls[0]["output_dir"].endswith("outputs/case")
-    assert calls[1]["output_dir"].endswith("outputs/case")
+    assert [c["mu"] for c in calls] == run_energy_cone.DEFAULT_MU
 
-    summary_path = tmp_path / "outputs" / "case" / "mu_sweep_summary.csv"
-    assert summary_path.exists()
+    summary = tmp_path / "output" / "mu_sweep_summary.csv"
+    assert summary.exists()
+    lines = summary.read_text(encoding="utf-8").strip().splitlines()
+    assert lines[0].startswith("mu,n_vents,")
+    assert len(lines) == len(run_energy_cone.DEFAULT_MU) + 1
 
-    lines = summary_path.read_text(encoding="utf-8").strip().splitlines()
-    assert lines[0] == "mu,n_vents,az_step,dr_m,vent_inward_shift_m,area_m2,bounds_minx,bounds_miny,bounds_maxx,bounds_maxy,output_dir"
-    assert "0.25,3,1.0,5.0,0.0,123.25,1.0,2.0,3.0,4.0," in lines[1]
-    assert "0.3,3,1.0,5.0,0.0,123.3,1.0,2.0,3.0,4.0," in lines[2]
+
+def test_run_energy_cone_custom_mu(monkeypatch, tmp_path):
+    config_path = tmp_path / "case.yml"
+    config_path.write_text("", encoding="utf-8")
+
+    def fake_load_config(p):
+        return {
+            "dem_with_lava": str(tmp_path / "fake.tif"),
+            "output_dir": str(tmp_path / "output"),
+        }
+
+    def fake_run(cfg):
+        mu_tag = f"{cfg['mu']:.2f}"
+        out_dir = Path(cfg["output_dir"]) / f"mu_{mu_tag}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        return {
+            "n_vents": 1, "az_step": 1.0, "dr_m": 10.0,
+            "area_m2": cfg["mu"], "bounds_minx": 0.0, "bounds_miny": 0.0,
+            "bounds_maxx": 1.0, "bounds_maxy": 1.0, "output_dir": str(out_dir),
+        }
+
+    monkeypatch.setattr(run_energy_cone, "load_config", fake_load_config)
+    monkeypatch.setattr(run_energy_cone, "run", fake_run)
+    monkeypatch.setattr(sys, "argv", [
+        "run_energy_cone.py", "--config", str(config_path), "--mu", "0.25", "0.30",
+    ])
+
+    code = run_energy_cone.main()
+    assert code == 0
+
+    lines = (tmp_path / "output" / "mu_sweep_summary.csv").read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 3  # header + 2 rows

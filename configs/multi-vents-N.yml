@@ -1,7 +1,6 @@
 name: multi-vents-N
 vents_mode: manual
 dem_with_lava: ../data/demShinmoeRL2025N.tif
-mu: 0.30
 zoffset: 5.0
 crs_epsg: EPSG:6689
 az_step_deg: 1.0

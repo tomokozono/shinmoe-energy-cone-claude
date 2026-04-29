@@ -2,7 +2,6 @@ name: rim-vents-S
 vents_mode: rim
 dem_with_lava: ../data/demShinmoeRL2025S.tif
 dem_no_lava: ../data/demShinmoe2025_nolava.tif
-mu: 0.30
 tau_y: 30000.0
 zoffset: 5.0
 zoffset_mode: fixed

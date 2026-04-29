@@ -2,7 +2,6 @@ name: rim-vents-real-S-tau10h
 vents_mode: rim
 dem_with_lava: ../data/demShinmoe2025S_V1.tif
 dem_no_lava: ../data/demShinmoe2025_nolava.tif
-mu: 0.25
 tau_y: 300000.0
 zoffset_mode: thickness
 zoffset_scale: 1.0
