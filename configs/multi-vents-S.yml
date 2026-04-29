@@ -1,0 +1,21 @@
+name: multi-vents-S
+vents_mode: manual
+dem_with_lava: ../data/demShinmoeRL2025S.tif
+mu: 0.30
+zoffset: 5.0
+crs_epsg: EPSG:6689
+az_step_deg: 1.0
+vents:
+  - [678290, 3531350]
+  - [677480, 3530970]
+  - [677430, 3531860]
+  - [678210, 3532520]
+  - [678690, 3532250]
+  - [677670, 3531820]
+  - [676790, 3532190]
+  - [676960, 3532510]
+  - [678470, 3532040]
+  - [678440, 3531830]
+output_dir: ../output/multi-vents-S
+union_shapefile: merged_mu_0.30_union.shp
+quicklook_png: merged_mu_0.30_union.png

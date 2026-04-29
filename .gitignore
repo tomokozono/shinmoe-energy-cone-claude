@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# data (do not commit)
+*.tif
+*.tiff
+*.nc
+*.grib
+data/
+output/
+outputs/
+energy_cone_mu_*/
+.venv
+venvec
